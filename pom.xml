@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        AI Engineering Academy: Java AI Engineer, Volume 1
+        Root aggregator for every chapter module in this book.
+
+        This is a Maven "reactor" POM only: it aggregates the chapter
+        modules so the whole book's code can be built (and pushed) in one
+        repository with a single `mvn clean install` from this directory.
+
+        It deliberately does NOT act as the Maven <parent> for the chapter
+        modules. Each chapter keeps its own <parent>spring-boot-starter-parent
+        </parent> and its own dependency versions, so any chapter can still
+        be opened, built, and run entirely on its own:
+
+            cd chapter-05
+            mvn spring-boot:run
+
+        Adding a new chapter here means adding one <module> entry below
+        once that chapter's own pom.xml exists.
+    -->
+
+    <groupId>com.acme.retail</groupId>
+    <artifactId>ai-engineering-academy-code</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <name>AI Engineering Academy -- Volume 1 Code</name>
+    <description>
+        Reactor build for all Acme Retail chapter modules in Java AI
+        Engineer, Volume 1. Each module is an independent, runnable Spring
+        Boot application; this POM only lets them be built together.
+    </description>
+
+    <modules>
+        <module>chapter-01</module>
+        <module>chapter-02</module>
+        <module>chapter-03</module>
+        <!--
+            chapter-04 through chapter-09 are deliberately code-free by
+            design (see blueprint.md): Sarah hasn't written any AI-calling
+            code yet at that point in the story, so those chapters teach
+            AI foundations purely conceptually, with labeled pseudocode in
+            the manuscript instead of a runnable Maven module. This is not
+            a gap to fill in later.
+        -->
+        <module>chapter-10</module>
+        <module>chapter-11</module>
+        <module>chapter-12</module>
+        <module>chapter-13</module>
+        <module>chapter-14</module>
+        <module>chapter-15</module>
+        <module>chapter-16</module>
+        <module>chapter-17</module>
+        <module>chapter-18</module>
+        <module>chapter-19</module>
+        <module>chapter-20</module>
+    </modules>
+
+</project>

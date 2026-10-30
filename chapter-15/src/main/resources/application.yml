@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: chapter-15-sarah-builds-an-escape-hatch
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:demo-key}
+      chat:
+        options:
+          model: gpt-4o-mini
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY:demo-key}
+      chat:
+        options:
+          model: claude-3-5-sonnet-latest
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.springframework.ai: INFO
+    com.acme.retail.ch15: INFO

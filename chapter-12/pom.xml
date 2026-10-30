@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Chapter 12: "Customers Don't Want to Wait"
+
+        Standalone module. It does not depend on any other chapter. It shows
+        Sarah's assistant endpoint two ways: the traditional synchronous
+        /assistant/ask endpoint, which waits for the entire AI answer before
+        responding, and the streaming /assistant/ask/stream Server-Sent Events
+        (SSE) endpoint built on Spring AI's streaming ChatClient, which sends
+        tokens to the browser as the model generates them.
+
+        Run it with:
+          mvn spring-boot:run
+
+        Run the tests with:
+          mvn test
+
+        The tests do not call a real AI provider: they use a small hand
+        written fake ChatModel, so no OPENAI_API_KEY is needed to run "mvn test".
+        Running the application for real (spring-boot:run) does need a real key,
+        set as the OPENAI_API_KEY environment variable.
+    -->
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.4</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.acme.retail</groupId>
+    <artifactId>chapter-12-customers-dont-wait</artifactId>
+    <version>1.0.0</version>
+    <name>chapter-12-customers-dont-wait</name>
+    <description>
+        Java AI Engineer -- Sarah's Journey at Acme Retail.
+        Chapter 12: converts a synchronous AI assistant endpoint into a
+        streaming SSE endpoint using Spring AI's streaming ChatClient, and
+        measures first-token latency vs total response latency.
+    </description>
+
+    <properties>
+        <java.version>21</java.version>
+        <spring-ai.version>1.0.0</spring-ai.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!--
+            Auto-configures a Spring AI ChatModel bean talking to the OpenAI chat
+            completions API, driven by the spring.ai.openai.* properties in
+            application.yml. AssistantConfig wraps that ChatModel in a ChatClient.
+        -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-openai</artifactId>
+        </dependency>
+
+        <!--
+            This chapter's tests use hand-written fake ChatModel implementations
+            (see AssistantServiceTest, AssistantControllerTest) instead of a
+            mocking framework, so mockito-core is excluded here rather than left
+            on the test classpath unused.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.mockito</groupId>
+                    <artifactId>mockito-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mockito</groupId>
+                    <artifactId>mockito-junit-jupiter</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

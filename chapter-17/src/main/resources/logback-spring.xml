@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!--
+      Every log line is written as one JSON object instead of one free-text
+      sentence. The MDC fields set by CorrelationIdFilter and AiCallLogger
+      (correlationId, aiModel, aiLatencyMs, aiPromptTokens,
+      aiCompletionTokens) become top-level JSON fields automatically, which
+      is what makes them searchable and filterable in a log platform such as
+      Splunk, Datadog or the ELK stack.
+    -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>correlationId</includeMdcKeyName>
+            <includeMdcKeyName>aiModel</includeMdcKeyName>
+            <includeMdcKeyName>aiLatencyMs</includeMdcKeyName>
+            <includeMdcKeyName>aiPromptTokens</includeMdcKeyName>
+            <includeMdcKeyName>aiCompletionTokens</includeMdcKeyName>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

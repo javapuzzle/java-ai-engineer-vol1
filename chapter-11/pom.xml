@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Chapter 11: The AI Is Wrong
+
+        This module is self-contained and independently runnable. It is not
+        wired into any other chapter's build. Each chapter of this book gets
+        its own Maven module so a reader can open exactly one chapter's code
+        without pulling in the rest of the book.
+
+        Story: Sarah's shopping assistant told a customer a sold-out shoe was
+        available. The model was never grounded in Acme Retail's real inventory
+        table, so it produced a plausible-sounding guess (a hallucination).
+        This module contrasts an ungrounded prompt with a grounded one built
+        using RAG (Retrieval-Augmented Generation): retrieve real inventory
+        facts, then generate the answer from them.
+    -->
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.4</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.acme.retail</groupId>
+    <artifactId>chapter-11-ai-is-wrong</artifactId>
+    <version>1.0.0</version>
+    <name>chapter-11-ai-is-wrong</name>
+    <description>
+        Java AI Engineer -- Sarah's Journey at Acme Retail.
+        Chapter 11: grounding a shopping assistant in real inventory data with
+        Retrieval-Augmented Generation (RAG), instead of trusting the model to
+        know Acme Retail's live catalog.
+    </description>
+
+    <properties>
+        <java.version>21</java.version>
+        <spring-ai.version>1.0.0</spring-ai.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-openai</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!--
+                This chapter's tests use Mockito (@MockBean / Mockito.mock),
+                which needs to instrument classes at runtime. On JDK versions
+                newer than what this Spring Boot version's pinned Byte Buddy
+                officially supports, and in environments that restrict a JVM
+                from self-attaching its own instrumentation agent, Mockito's
+                inline mock maker otherwise fails to initialize. Pre-loading
+                the agent explicitly (rather than relying on self-attach) and
+                allowing Byte Buddy's experimental newer-JDK support keeps
+                these tests running on any JDK 21+ without changing any
+                dependency versions.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-javaagent:${net.bytebuddy:byte-buddy-agent:jar} -Dnet.bytebuddy.experimental=true</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

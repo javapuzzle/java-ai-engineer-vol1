@@ -1,0 +1,24 @@
+# Chapter 01 -- Sarah's First Day at Acme Retail
+#
+# This is a local development configuration. In production, connection
+# details come from environment variables / a secrets manager, not from a
+# file committed to source control -- see the "Production Notes" section of
+# the chapter for why.
+
+spring:
+  application:
+    name: chapter-01-sarah-first-day
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/acme_retail
+    username: acme
+    password: acme
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+
+server:
+  port: 8080

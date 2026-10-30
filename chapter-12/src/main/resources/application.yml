@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: chapter-12-customers-dont-wait
+  ai:
+    openai:
+      # Set a real key in the OPENAI_API_KEY environment variable to run
+      # this application for real. The unit tests do not need it -- they
+      # exercise AssistantService against a fake ChatModel instead.
+      api-key: ${OPENAI_API_KEY:demo-key-set-a-real-key-to-run-this}
+      chat:
+        options:
+          model: gpt-4o-mini
+          temperature: 0.3
+
+server:
+  port: 8086
+
+logging:
+  level:
+    com.acme.retail.ch12: INFO

@@ -1,0 +1,78 @@
+# Chapter 16 -- Production Doesn't Care About Your Demo
+#
+# This is a local development configuration. In production, the API key
+# comes from a secrets manager / environment variable injected by the
+# platform team, not from a file committed to source control.
+
+spring:
+  application:
+    name: chapter-16-production-doesnt-care
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:demo-key}
+      chat:
+        options:
+          model: gpt-4o-mini
+
+server:
+  port: 8080
+
+# Resilience4j — every value below is deliberately tuned for a chat
+# assistant answering a live customer, not for a batch job that can
+# afford to wait.
+resilience4j:
+
+  circuitbreaker:
+    instances:
+      acmeAiAssistant:
+        # Look at the last 10 calls to decide whether the AI provider is
+        # healthy. COUNT_BASED means "the last N calls", as opposed to
+        # TIME_BASED ("the last N seconds").
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        # Open the circuit once 50% of the last 10 calls failed.
+        failure-rate-threshold: 50
+        # Stay open for 15 seconds before trying again. No calls reach
+        # the AI provider while the circuit is open -- they all get the
+        # fallback immediately.
+        wait-duration-in-open-state: 15s
+        # After 15 seconds, let 3 test calls through (half-open). If they
+        # succeed, close the circuit again. If they fail, reopen it.
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-closed-enabled: false
+        register-health-indicator: true
+
+  retry:
+    instances:
+      acmeAiAssistant:
+        # Try up to 3 times total (1 original call + 2 retries).
+        max-attempts: 3
+        # Exponential backoff: wait 200ms, then 400ms, then 800ms between
+        # attempts, instead of always waiting a fixed 200ms. A fixed
+        # interval means every failed client retries in lockstep, which
+        # can hit a recovering AI provider with a synchronized wave of
+        # traffic right when it is most fragile. Backoff spreads that out.
+        wait-duration: 200ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+
+  bulkhead:
+    instances:
+      acmeAiAssistant:
+        # At most 10 requests may be waiting on the AI provider at the
+        # same time. The 11th request fails fast (and hits the circuit
+        # breaker's fallback) instead of queueing behind ten others that
+        # are each waiting up to the 2.5-second read timeout. This is
+        # what stops the AI dependency from starving every other endpoint
+        # of threads.
+        max-concurrent-calls: 10
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,circuitbreakers,retries,bulkheads
+  endpoint:
+    health:
+      show-details: always

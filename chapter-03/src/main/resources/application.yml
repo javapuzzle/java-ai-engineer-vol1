@@ -1,0 +1,60 @@
+# Chapter 03 — When the Database Says No
+#
+# Baseline config for a service backed by PostgreSQL and Redis. The
+# connection-pool and logging settings below are exactly what Daniel and
+# Sarah look at during the chapter's investigation.
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: chapter-03-database-says-no
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/acme_retail
+    username: acme
+    password: acme
+    hikari:
+      pool-name: acme-retail-pool
+      # This is the number Daniel points at on the dashboard: how many
+      # connections the pool will ever hand out at once. Bigger is not
+      # automatically safer — see Production Notes.
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 3000
+      idle-timeout: 300000
+      max-lifetime: 1800000
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Exposes /actuator/metrics/hikaricp.connections.active,
+        # hikaricp.connections.pending, and friends — the numbers Daniel
+        # and Sarah read on the connection-pool dashboard.
+        include: health,metrics
+
+logging:
+  level:
+    # Sarah's second move in this chapter: flip this from "info" to
+    # "debug" to see every SQL statement Hibernate sends, which is how she
+    # spots the same "select category where id = ?" query repeating once
+    # per product.
+    org.hibernate.SQL: info
+    # org.hibernate.SQL: debug
+    # org.hibernate.orm.jdbc.bind: trace

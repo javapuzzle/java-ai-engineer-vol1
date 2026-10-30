@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ch13-shopping-assistant-memory
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  ai:
+    openai:
+      # In a real deployment this comes from a secret store, never from a
+      # committed file. A placeholder is fine for reading and running this
+      # chapter's tests, which mock the ChatModel and never call a real API.
+      api-key: ${OPENAI_API_KEY:demo-key}
+      chat:
+        options:
+          model: gpt-4o-mini
+          temperature: 0.3
+
+# Chat memory settings (see chat.memory.* -> ChatMemoryProperties).
+#
+# max-turns caps how many user+assistant messages are kept per session.
+# Every LLM call resends this many turns, so raising it raises token cost
+# and latency on every single request, not just the first one.
+chat:
+  memory:
+    max-turns: 12
+    ttl: 30m

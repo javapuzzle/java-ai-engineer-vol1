@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Chapter 18: The AI Should Never Have Seen That.
+
+        This module shows the fix for a real incident: a customer's email
+        address reached the prompt log sent to the AI provider because the
+        full Customer entity was handed to the prompt builder without any
+        filtering. The code here is the SECURE, production version.
+        PII (Personally Identifiable Information) redaction happens before
+        any customer data is assembled into a prompt, and the AI's only
+        function-calling tool is narrowly scoped and read-only.
+
+        This module is self-contained and independently runnable. It is not
+        wired into any other chapter's build. Each chapter of this book gets
+        its own Maven module so a reader can open exactly one chapter's code
+        without pulling in the rest of the book.
+    -->
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.4</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.acme.retail</groupId>
+    <artifactId>chapter-18-ai-security</artifactId>
+    <version>1.0.0</version>
+    <name>chapter-18-ai-security</name>
+    <description>
+        Java AI Engineer -- Sarah's Journey at Acme Retail.
+        Chapter 18: PII redaction before prompt assembly, and a narrowly
+        scoped, read-only function-calling tool for the AI assistant.
+    </description>
+
+    <properties>
+        <java.version>21</java.version>
+        <!-- Spring AI's Bill of Materials (BOM) pins compatible versions of
+             every Spring AI artifact, the same way spring-boot-starter-parent
+             pins Spring Boot artifact versions. -->
+        <spring-ai.version>1.0.0</spring-ai.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--
+            Gives the assistant a single, narrowly scoped function it may call
+            (OrderStatusLookupTool). Sarah never hands the model a repository
+            or a database connection. Only one read-only, validated method.
+        -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-openai</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!--
+                This chapter's tests use Mockito (@MockBean / Mockito.mock),
+                which needs to instrument classes at runtime. On JDK versions
+                newer than what this Spring Boot version's pinned Byte Buddy
+                officially supports, and in environments that restrict a JVM
+                from self-attaching its own instrumentation agent, Mockito's
+                inline mock maker otherwise fails to initialize. Pre-loading
+                the agent explicitly (rather than relying on self-attach) and
+                allowing Byte Buddy's experimental newer-JDK support keeps
+                these tests running on any JDK 21+ without changing any
+                dependency versions.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-javaagent:${net.bytebuddy:byte-buddy-agent:jar} -Dnet.bytebuddy.experimental=true</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

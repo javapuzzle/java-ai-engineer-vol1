@@ -1,0 +1,38 @@
+# Chapter 19 -- Can We Trust Our Tests?
+#
+# spring.ai.openai.api-key is read from the OPENAI_API_KEY environment
+# variable. The fallback value after the colon is only a placeholder so the
+# application can still start (and the deterministic tests can still run)
+# without a real key. The golden-dataset evaluation test in this module is
+# skipped automatically when OPENAI_API_KEY is not set -- see
+# ShoppingAssistantEvaluationTest for why that is the correct behavior, not
+# a workaround.
+
+spring:
+  application:
+    name: chapter-19-testing-ai
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/acme_retail
+    username: acme
+    password: acme
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:demo-key}
+      chat:
+        options:
+          model: gpt-4o-mini
+          # A low temperature makes answers more repeatable, but "more
+          # repeatable" is still not "deterministic". This is exactly why
+          # Chapter 19 needs a scored evaluation test, not just a lower
+          # temperature setting.
+          temperature: 0.1
+
+server:
+  port: 8091

@@ -1,0 +1,42 @@
+# Chapter 02 — "It Works, But It's Slow"
+#
+# This is the configuration AFTER Sarah's investigation, not the naive
+# first attempt. The naive attempt is kept here as a comment so you can
+# see exactly what changed.
+
+server:
+  port: 8080
+
+  # --------------------------------------------------------------------
+  # NAIVE FIX (Sarah's first instinct) — kept here only as a reference.
+  # Raising the platform-thread pool ceiling let a few more requests run
+  # at once, but each extra thread costs ~1 MB of stack memory and more
+  # context-switching, and requests still queue once the pool is full.
+  # This did not solve the underlying problem: requests were blocked on
+  # I/O, not on CPU.
+  #
+  # tomcat:
+  #   threads:
+  #     max: 800   # up from the Spring Boot default of 200
+  # --------------------------------------------------------------------
+
+spring:
+  application:
+    name: ch02-product-api
+
+  # --------------------------------------------------------------------
+  # THE REAL FIX. On Java 21+, this tells Spring Boot to run each request
+  # on a cheap virtual thread instead of an expensive platform thread.
+  # Blocking calls (like ProductRepository's simulated database call) no
+  # longer tie up a scarce, expensive resource — they park the virtual
+  # thread almost for free and release the underlying OS thread to do
+  # other work. No business logic changed to get this benefit.
+  # --------------------------------------------------------------------
+  threads:
+    virtual:
+      enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.acme.retail.ch02: INFO

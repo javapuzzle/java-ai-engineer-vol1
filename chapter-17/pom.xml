@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+      Chapter 17 - Something Is Wrong, But Nobody Knows What
+
+      Standalone module. It does not depend on any other chapter. It shows how
+      Sarah and Alex made the AI assistant's behavior observable: every request
+      gets a correlation ID, every AI call is logged as structured JSON with
+      its prompt, response, latency and token usage, and Micrometer records
+      latency and token metrics.
+
+      Run it with:
+        mvn spring-boot:run
+
+      Then call it:
+        curl -i -X POST http://localhost:8090/api/assistant/messages \
+          -H "Content-Type: application/json" \
+          -H "X-Correlation-Id: ticket-4821" \
+          -d '{"customerId":"cust-1","message":"Is this in stock?"}'
+
+      Run the tests with:
+        mvn test
+    -->
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.4</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.acme.retail</groupId>
+    <artifactId>chapter-17-something-is-wrong</artifactId>
+    <version>1.0.0</version>
+    <name>chapter-17-something-is-wrong</name>
+    <description>
+        Java AI Engineer - Sarah's Journey at Acme Retail.
+        Chapter 17: correlation IDs, structured logging and Micrometer metrics
+        around AI calls, so a 200 OK response can actually be explained.
+    </description>
+
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Micrometer: AI call latency and token metrics -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
+        <!-- Structured (JSON) logging output -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>7.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -1,0 +1,20 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: chapter-17-observability
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus,metrics
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    com.acme.retail.ch17: INFO

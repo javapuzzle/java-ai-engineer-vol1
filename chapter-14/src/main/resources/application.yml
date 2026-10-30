@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: chapter-14-not-just-words-anymore
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:demo-key}
+      chat:
+        options:
+          # Vision-capable model -- required for image input to work at all.
+          model: gpt-4o
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.springframework.ai: INFO

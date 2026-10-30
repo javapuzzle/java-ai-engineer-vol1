@@ -1,0 +1,21 @@
+# Chapter 10 -- Sarah Meets AI
+#
+# spring.ai.openai.api-key is read from the OPENAI_API_KEY environment
+# variable. The fallback value after the colon is only a placeholder so the
+# application can still start (and its tests can still run) without a real
+# key. Never commit a real API key into this file -- set OPENAI_API_KEY in
+# your shell, your IDE run configuration, or your deployment environment
+# instead.
+spring:
+  application:
+    name: chapter-10-sarah-meets-ai
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:sk-REPLACE-WITH-A-REAL-KEY}
+      chat:
+        options:
+          model: gpt-4o-mini
+          temperature: 0.3
+
+server:
+  port: 8080

@@ -1,0 +1,32 @@
+# Test-only overrides: fast retry/circuit-breaker timings so
+# ShoppingAssistantServiceTest does not spend real seconds waiting on
+# backoff or an open circuit.
+
+resilience4j:
+  retry:
+    instances:
+      acmeAiAssistant:
+        max-attempts: 3
+        wait-duration: 10ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+
+  circuitbreaker:
+    instances:
+      acmeAiAssistant:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 200ms
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-closed-enabled: false
+
+  bulkhead:
+    instances:
+      acmeAiAssistant:
+        max-concurrent-calls: 10
+
+spring:
+  ai:
+    openai:
+      api-key: test-key

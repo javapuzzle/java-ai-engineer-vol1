@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Chapter 19: Can We Trust Our Tests?
+
+        Sarah's full unit and integration test suite is green. Production still
+        served a customer a wrong answer. This module shows why: deterministic
+        tests (fixed input -> fixed expected output) and AI evaluation (fixed
+        input -> a scored, real model output) are two different disciplines,
+        and neither one replaces the other.
+
+        This module contains TWO kinds of tests, on purpose:
+
+            1. A Testcontainers-based integration test that replaces the AI
+               provider with a deterministic stub, so the wiring between the
+               controller, service, repository and a real PostgreSQL database
+               can be asserted with an exact match, just like any other
+               Spring MVC integration test.
+
+            2. A small golden-dataset evaluation test that calls the REAL AI
+               provider and scores its answers for groundedness (does the
+               answer match known inventory facts?) and relevance (does it
+               actually address the product that was asked about?).
+
+        This module is self-contained and independently runnable. It is not
+        wired into any other chapter's build. Each chapter of this book gets
+        its own Maven module so a reader can open exactly one chapter's code
+        without pulling in the rest of the book.
+    -->
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.4</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.acme.retail</groupId>
+    <artifactId>chapter-19-testing-ai</artifactId>
+    <version>1.0.0</version>
+    <name>chapter-19-testing-ai</name>
+    <description>
+        Java AI Engineer -- Sarah's Journey at Acme Retail.
+        Chapter 19: Testcontainers plus a mocked AI provider for deterministic
+        integration tests, and a separate golden-dataset evaluation harness that
+        scores a real model's answers for groundedness and relevance.
+    </description>
+
+    <properties>
+        <java.version>21</java.version>
+        <spring-ai.version>1.0.0</spring-ai.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-openai</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+            Testcontainers spins up a real, throwaway PostgreSQL database in
+            Docker for the duration of a test. spring-boot-starter-parent already
+            manages compatible Testcontainers versions, so no explicit <version>
+            is needed here.
+        -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

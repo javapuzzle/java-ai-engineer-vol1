@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: chapter-11-ai-is-wrong
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/acme_retail
+    username: acme
+    password: acme
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+  ai:
+    openai:
+      # Sarah reads this from an environment variable -- never hardcode a
+      # real API key in a config file that gets committed to source control.
+      api-key: ${OPENAI_API_KEY:demo-key}
+      chat:
+        options:
+          model: gpt-4o-mini
+          temperature: 0.2
+
+server:
+  port: 8085

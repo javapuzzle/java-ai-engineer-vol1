@@ -1,0 +1,43 @@
+# Chapter 20 -- Launch Day
+#
+# This is a local development configuration. In production, connection
+# details come from environment variables / a secrets manager, not from a
+# file committed to source control (see Chapter 18's security discipline
+# and Chapter 01's "Production Notes" for why).
+
+spring:
+  application:
+    name: chapter-20-launch-day
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/acme_retail
+    username: acme
+    password: acme
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+
+server:
+  port: 8095
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, circuitbreakers, circuitbreakerevents
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+
+logging:
+  pattern:
+    # correlationId comes from CorrelationIdFilter via SLF4J's MDC -- this
+    # pattern makes sure every log line during an incident carries it,
+    # without every log statement having to pass it explicitly.
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{correlationId}] %logger{36} - %msg%n"

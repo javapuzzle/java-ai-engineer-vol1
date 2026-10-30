@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Chapter 03 — When the Database Says No
+
+        This module is self-contained and independently runnable. It is not
+        wired into any other chapter's build. It picks up the product catalog
+        from earlier chapters and adds a Category relationship, then walks
+        through the exact bug Sarah finds: an N+1 query pattern, fixed with
+        JOIN FETCH / @EntityGraph, plus a Redis cache-aside layer for hot reads.
+    -->
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.4</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.acme.retail</groupId>
+    <artifactId>chapter-03-database-says-no</artifactId>
+    <version>1.0.0</version>
+    <name>chapter-03-database-says-no</name>
+    <description>
+        Java AI Engineer -- Sarah's Journey at Acme Retail.
+        Chapter 03: connection pools, the N+1 query pattern, JOIN FETCH /
+        @EntityGraph fixes, and a Redis cache-aside layer for hot product reads.
+    </description>
+
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--
+            Used only by the tests below, to prove the N+1 query count with a
+            real in-memory relational database instead of mocks. Not used by
+            the running application, which talks to PostgreSQL.
+        -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!--
+                This chapter's tests use Mockito (@MockBean / Mockito.mock),
+                which needs to instrument classes at runtime. On JDK versions
+                newer than what this Spring Boot version's pinned Byte Buddy
+                officially supports, and in environments that restrict a JVM
+                from self-attaching its own instrumentation agent, Mockito's
+                inline mock maker otherwise fails to initialize. Pre-loading
+                the agent explicitly (rather than relying on self-attach) and
+                allowing Byte Buddy's experimental newer-JDK support keeps
+                these tests running on any JDK 21+ without changing any
+                dependency versions.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-javaagent:${net.bytebuddy:byte-buddy-agent:jar} -Dnet.bytebuddy.experimental=true</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

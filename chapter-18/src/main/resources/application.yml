@@ -1,0 +1,33 @@
+# Chapter 18 -- The AI Should Never Have Seen That
+#
+# Secrets rule: spring.ai.openai.api-key is read from the OPENAI_API_KEY
+# environment variable, never written into this file. A secret checked
+# into source control is a leak waiting to happen -- the same category of
+# mistake this chapter's PII (Personally Identifiable Information) leak
+# belongs to. See "Production Notes" in the chapter for details.
+
+spring:
+  application:
+    name: chapter-18-ai-security
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/acme_retail
+    username: acme
+    password: acme
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      chat:
+        options:
+          model: gpt-4o-mini
+          temperature: 0.2
+
+server:
+  port: 8080
